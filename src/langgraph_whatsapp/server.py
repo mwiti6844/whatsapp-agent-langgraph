@@ -1,4 +1,7 @@
 # server.py
+from dotenv import load_dotenv
+load_dotenv()
+
 import logging
 from urllib.parse import parse_qs
 
