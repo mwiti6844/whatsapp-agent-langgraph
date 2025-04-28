@@ -1,52 +1,82 @@
-# LangGraph WhatsApp Agent
+# LangGraph WhatsApp Agent (Groq‑powered fork)
 
-A template for building WhatsApp agents using LangGraph and Twilio. This project enables you to deploy AI agents that interact with users via WhatsApp, process messages and images, and invoke custom graph-based agents hosted on the LangGraph Platform.
+A minimal template for building **WhatsApp AI agents** with [LangGraph](https://github.com/langchain-ai/langgraph), [Twilio](https://www.twilio.com/whatsapp), and **GroqCloud Llama‑3** models.  
+You can run it entirely on your laptop (hot‑reload dev stack) or deploy to LangGraph Cloud.
 
-It provides a foundation for building scalable, secure, and maintainable AI agent services.
+![architecture](./docs/app_architecture_v0.1.0.png)
 
-Fork this repo and iterate to create your production-ready solution.
+---
 
-![Architecture Diagram](./docs/app_architecture_v0.1.0.png)
+## What changed in this fork
+
+| Patch | Why |
+|-------|-----|
+| **Groq model** | Swapped default model from `gemini‑flash` to `llama3‑70b‑8192` (fast & cheap). |
+| **Env loading** | Added `dotenv.load_dotenv()` so Twilio creds / API keys come from `.env`. |
+| **Response schema fix** | Updated `agent.py` to read `data["response"]` as well as legacy `messages`. |
+| **`.gitignore`** | Added `.env` to keep secrets out of Git. |
+| **Starter docs** | Quick‑start commands tested on Windows + PowerShell. |
+
+Everything else is stock upstream—multi‑agent supervisor, calendar MCP example, image support, etc.
+
+---
+
+## Quick start (local dev)
+
+```powershell
+# 1 clone + enter dir
+$ git clone https://github.com/<your-handle>/langgraph-whatsapp-agent.git
+$ cd langgraph-whatsapp-agent
+
+# 2 create virtual‑env + install deps
+$ python -m venv .venv
+$ .\.venv\Scripts\activate
+$ pip install -r requirements.txt
+
+# 3 make a .env
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxx
+TWILIO_AUTH_TOKEN=xxxxxxxxxx
+TWILIO_PHONE_NUMBER=whatsapp:+1415XXXXXXX
+GROQ_API_KEY=gsk_...
+GROQ_MODEL=llama3-70b-8192
+
+# 4 run the dev servers in two terminals
+## terminal 1 – LangGraph runtime
+$ langgraph dev --port 8080
+
+## terminal 2 – FastAPI bridge
+$ uvicorn langgraph_whatsapp.server:APP --port 8081 --reload
+
+# 5 tunnel WhatsApp webhook
+$ ngrok http 8081
+# → copy https://xxxx.ngrok-free.app/whatsapp to Twilio sandbox webhook
+```
+
+Send **hello** to your sandbox number—Groq Llama‑3 replies instantly.
+
+---
 
 ## Features
 
-- Create custom LangGraph-powered agents for WhatsApp
-- Support for multi-agents with supervisor-based architecture
-- Integration with Model Context Protocol (MCP) servers (Supermemory, Sapier, etc.)
-- Support for image processing and multimodal interactions
-- Persistent conversation state across messages
-- Request validation for security
-- Comprehensive observability via LangSmith
-- Easy deployment with LangGraph Platform
+* Multi‑agent graph (calendar agent + supervisor) out of the box.
+* Image attachments supported (base64‑encoded in LangGraph input).
+* Plug‑and‑play with MCP servers: Supermemory, Zapier, any SSE‑based endpoint.
+* Full tracing in LangSmith when you set `LANGCHAIN_TRACING_V2=true`.
+* Ready for LangGraph Cloud—push repo, set env vars, deploy.
 
-## Stack
+---
 
-- **WhatsApp Integration**: Twilio API for messaging and multimedia handling
-- **Agent Framework**: LangGraph (by LangChain) as the MCP client and multi-agent system using langgraph_supervisor
-- **Models**: Supports Google Gemini, OpenAI GPT models, and more
-- **MCP Servers**:
-  Using langchain-mcp-adapters
-  - Supermemory
-  - Zapier for access to thousands of apps and integrations (Google, Slack, Spotify, etc.)
-- **Observability**: Complete tracing with LangSmith
-- **Deployment**: LangGraph Platform for simplified production hosting
+## Roadmap ideas (you can build next)
 
-## Prerequisites
+* Vector‑search FAQ retrieval tool.
+* Ticket escalation via Zendesk or e‑mail.
+* Voice note transcription (Twilio Media Streams + Groq Whisper‑large v3).
 
-- Twilio account with WhatsApp integration
-- API key for LLM access (OpenAI, Google, etc.)
-- LangGraph Platform access
-- (Optional) MCP server configurations
+Pull requests welcome!
 
-## Getting Started
-
-1. Fork this repository to start your own project
-2. Build your agent using the template structure
-3. Deploy to LangGraph Platform
-![Langggraph Platform](./docs/langgraph-platform_config.png)
-4. Configure Twilio webhook to point to your LangGraph deployment URL (/whatsapp)
-![Twilio](./docs/twilio_config.png)
+---
 
 ## License
 
-This project is licensed under the terms included in the LICENSE file.
+Apache‑2.0 — free for personal & commercial use. Please keep attribution in derivative public repos.
+
